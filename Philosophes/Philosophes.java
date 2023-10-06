@@ -4,48 +4,54 @@ public class Philosophes extends Thread {
 
     final Fourchette fd;
     final Fourchette fg;
+    Chaise chaise = new Chaise();
 
-    public Philosophes(Fourchette fd, Fourchette fg){
+    public Philosophes(Fourchette fd, Fourchette fg) {
         this.fd = fd;
         this.fg = fg;
+
     }
 
     public void run() {
-        pensar();
+
+        penser();
         try {
-            comer();
+            manger();
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    public void pensar(){
+    public void penser() {
+ 
         Random alea = new Random();
-        int segundos = alea.nextInt(20); // Numero aleatório de 0 a 20
-        System.out.println(Thread.currentThread().getName() + " vai pensar! ");
+        int segundos = alea.nextInt(5); // Numero aleatório de 0 a 20
+        System.out.println(Thread.currentThread().getName() + " va penser! ");
         try {
             Thread.sleep(segundos * 1000);
-            System.out.println(Thread.currentThread().getName() + " acabou de pensar e está faminto ");
+            System.out.println(Thread.currentThread().getName() + " venait de penser et a faim ");
 
         } catch (InterruptedException e) {
             // TODO: handle exception
         }
     }
 
-    public void comer() throws InterruptedException{
+    public void manger() throws InterruptedException {
+
         try {
-        fd.Tomar();
-        fg.Tomar();
-        System.out.println(Thread.currentThread().getName() + " está comendo");
-        wait(2000);    
+            chaise.Sentar();
+            fd.Prendre();
+            fg.Prendre();
+            System.out.println(Thread.currentThread().getName() + " mange");
         } catch (Exception e) {
             // TODO: handle exception
         }
-        fd.Largar();
-        fg.Largar();
-        System.out.println(Thread.currentThread().getName() + " terminou de comer");
-    }
+        fd.Lacher();
+        fg.Lacher();
+        chaise.Levantar();
+        System.out.println(Thread.currentThread().getName() + " a finit de manger");
 
+    }
 
 }

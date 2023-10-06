@@ -7,14 +7,14 @@ public class Fourchette {
         this.disponibilidade = disponibilidade;
         }
 
-    public synchronized void Tomar () throws InterruptedException{
+    public synchronized void Prendre () throws InterruptedException{
         while(disponibilidade == false){
             wait();
         }
         this.disponibilidade = false;
     }
 
-    public synchronized void Largar(){
+    public synchronized void Lacher(){
         this.disponibilidade = true;
         notifyAll();
 

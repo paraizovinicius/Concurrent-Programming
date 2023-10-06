@@ -8,6 +8,7 @@ public class Client {
             garfos[i] = new Fourchette(true);
         }
 
+
         Thread[] threads = new Thread[5];
         // Cria 5 threads
         for (int i = 0; i < 5; i++) {
