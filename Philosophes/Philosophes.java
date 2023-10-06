@@ -11,7 +11,6 @@ public class Philosophes extends Thread {
         this.fg = fg;
 
     }
-
     public void run() {
 
         penser();
@@ -26,7 +25,7 @@ public class Philosophes extends Thread {
     public void penser() {
  
         Random alea = new Random();
-        int segundos = alea.nextInt(5); // Numero aleatório de 0 a 20
+        int segundos = alea.nextInt(5); 
         System.out.println(Thread.currentThread().getName() + " va penser! ");
         try {
             Thread.sleep(segundos * 1000);
@@ -44,6 +43,9 @@ public class Philosophes extends Thread {
             fd.Prendre();
             fg.Prendre();
             System.out.println(Thread.currentThread().getName() + " mange");
+            try{
+                sleep(3000);
+            } catch (InterruptedException e){ e.printStackTrace();}
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -51,7 +53,5 @@ public class Philosophes extends Thread {
         fg.Lacher();
         chaise.Levantar();
         System.out.println(Thread.currentThread().getName() + " a finit de manger");
-
     }
-
 }
