@@ -4,7 +4,7 @@ import java.util.concurrent.*;
 public class TrierRapidement {
 
     private static int threshold;
-    static final int taille = 100000;
+    static final int taille = 100000000;
     static final int[] tableau = new int[taille];
     static final int[] tableau2 = new int[taille];
     static final int borne = 10 * taille;
