@@ -1,11 +1,12 @@
 import java.util.Random;
 import java.util.concurrent.*;
 
-public class Quicksort {
+public class TrierRapidement {
 
     private static int threshold;
-    static final int taille = 50;
+    static final int taille = 100000;
     static final int[] tableau = new int[taille];
+    static final int[] tableau2 = new int[taille];
     static final int borne = 10 * taille;
 
 
@@ -20,7 +21,7 @@ public class Quicksort {
         System.out.println();
     }
 
-    private static void swap(int[] tableau, int i, int j) {
+    private static void echangerElements(int[] tableau, int i, int j) {
         int temp = tableau[i];
         tableau[i] = tableau[j];
         tableau[j] = temp;
@@ -31,11 +32,11 @@ public class Quicksort {
         int place = debut;
         for (int i = debut; i < fin; i++) {
             if (t[i] < v) {
-                swap(t, i, place);
+                echangerElements(t, i, place);
                 place++;
             }
         }
-        swap(t, place, fin);
+        echangerElements(t, place, fin);
         return place;
     }
 
@@ -47,26 +48,44 @@ public class Quicksort {
         }
     }
 
+
+    private static boolean Comparer(int[] t1, int[] t2) {
+        for (int i = 0; i < t1.length; i++) {
+            if (t1[i] != t2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static void main(String[] args) {
 
         Random alea = new Random();
         for (int i = 0; i < taille; i++) {
             tableau[i] = alea.nextInt(2 * borne) - borne;
+            tableau2[i] = tableau[i];
         }
-        int p = 4;
 
-        threshold = (p > 1) ? (1 + taille / (p << 3)) : taille;
+        threshold = taille/100;
         long debutDuTri = System.nanoTime();
         parallelQuicksort(tableau, 0, taille - 1);
         long finDuTri = System.nanoTime();
-        long dureeDuTri = (finDuTri - debutDuTri) / 1000000;
+        long dureeDuTriRapide = (finDuTri - debutDuTri);
+
+        long debutDuTriA = System.nanoTime();
+        trierRapidement(tableau2, 0, taille - 1);
+        long finDuTriA = System.nanoTime();
+        long dureeDuTri = (finDuTriA - debutDuTriA);
+
 
         afficher(tableau, 0, taille - 1); // Affiche le tableau obtenu
-        System.out.println("Parallel obtenu en " + dureeDuTri + " millisecondes.");
+        System.out.println("Parallel obtenu en " + dureeDuTriRapide + " millisecondes.");
+        System.out.println("Sequence obtenu en " + dureeDuTri + " millisecondes.");
+        System.out.println("Les tableaux sont identiques: "+ Comparer(tableau, tableau2));
     }
 
     private static void parallelQuicksort(int[] tableau, int low, int high) {
-        ForkJoinPool pool = new ForkJoinPool();
+        ForkJoinPool pool = new ForkJoinPool(4); // Ce sont 4 le chiffre de threads
         pool.invoke(new PQuicksort(tableau, low, high));
         pool.shutdown();
     }
@@ -87,7 +106,7 @@ public class Quicksort {
                 trierRapidement(tableau, low, high);
             } else {
                 int i = low, j = high;
-                int pivot = tableau[low + (high - low) / 2];
+                int pivot = tableau[low + (high - low) / 2]; // un autre methode pour trouver le pivot
 
                 while (i <= j) {
                     while (tableau[i] < pivot) {
@@ -99,7 +118,7 @@ public class Quicksort {
                     }
 
                     if (i <= j) {
-                        swap(tableau, i, j);
+                        echangerElements(tableau, i, j);
                         i++;
                         j--;
                     }
