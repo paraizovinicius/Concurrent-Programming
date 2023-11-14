@@ -1,31 +1,41 @@
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-public class Quicksort extends Thread {
-    static final int taille = 1000;
+public class Quicksort {
+
+    private static int threshold;
+    static final int taille = 50;
     static final int[] tableau = new int[taille];
     static final int borne = 10 * taille;
-    public volatile int debut = 0;
-    public static volatile int NbTaches = 0;
 
-    private static void echangerElements(int[] t, int m, int n) {
-        int temp = t[m];
-        t[m] = t[n];
-        t[n] = temp;
+
+    private static void afficher(int[] t, int debut, int fin) {
+        for (int i = debut; i <= debut + 3 && i < t.length; i++) {
+            System.out.println("_" + t[i]);
+        }
+        System.out.println("...");
+        for (int i = fin - 3; i <= fin && i < t.length; i++) {
+            System.out.println("_" + t[i]);
+        }
+        System.out.println();
+    }
+
+    private static void swap(int[] tableau, int i, int j) {
+        int temp = tableau[i];
+        tableau[i] = tableau[j];
+        tableau[j] = temp;
     }
 
     private static int partitionner(int[] t, int debut, int fin) {
-        int v = t[fin]; // choix(arbitraire) du pivot
-        int place = debut; // place du pivot, à droite des elements deplaces
-        for (int i = debut; i < fin; i++) { // parcours du reste du tableau
-            if (t[i] < v) { // cette valeur t[i] doit etre à droite du pivot
-                echangerElements(t, i, place); // on le met à sa place
-                place++; // on met à jour la place du pivot
+        int v = t[fin];
+        int place = debut;
+        for (int i = debut; i < fin; i++) {
+            if (t[i] < v) {
+                swap(t, i, place);
+                place++;
             }
         }
-        echangerElements(t, place, fin);
+        swap(t, place, fin);
         return place;
     }
 
@@ -37,76 +47,72 @@ public class Quicksort extends Thread {
         }
     }
 
-    // if ((fin - debut + 1) <= taille / 100)
-    private static void afficher(int[] t, int debut, int fin) {
-        for (int i = debut; i <= debut + 5; i++) {
-            System.out.println("_" + t[i]);
-        }
-        System.out.println("...");
-        for (int i = fin - 5; i <= fin; i++) {
-            System.out.println("_" + t[i]);
-        }
-        System.out.println();
-    }
-
     public static void main(String[] args) {
 
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
         Random alea = new Random();
-        for (int i = 0; i < taille; i++) { // Remplissage aleatoire du tableau
+        for (int i = 0; i < taille; i++) {
             tableau[i] = alea.nextInt(2 * borne) - borne;
         }
-        // System.out.println("Tableau initial : ");
-        // afficher(tableau, 0, taille - 1); // Affiche le tableau à trier
+        int p = 4;
 
+        threshold = (p > 1) ? (1 + taille / (p << 3)) : taille;
         long debutDuTri = System.nanoTime();
-
-        threadPool.submit(new Task(tableau, 0, taille - 1));
-        threadPool.shutdown();
-        try {
-            threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+        parallelQuicksort(tableau, 0, taille - 1);
         long finDuTri = System.nanoTime();
         long dureeDuTri = (finDuTri - debutDuTri) / 1000000;
-
-        System.out.println("Tableau trié : ");
         afficher(tableau, 0, taille - 1); // Affiche le tableau obtenu
-        System.out.println("Obtenu en " + dureeDuTri + " millisecondes.");
-
-        System.out.println(NbTaches);
-
+        System.out.println("Parallel obtenu en " + dureeDuTri + " millisecondes.");
     }
 
-    private static class Task implements Runnable {
+    private static void parallelQuicksort(int[] tableau, int low, int high) {
+        ForkJoinPool pool = new ForkJoinPool();
+        pool.invoke(new PQuicksort(tableau, low, high));
+        pool.shutdown();
+    }
 
+    private static class PQuicksort extends RecursiveAction {
         private int[] tableau;
-        private int debut;
-        private int fin;
+        private int low, high;
 
-        public Task(int[] tableau, int debut, int fin) {
+        public PQuicksort(int[] tableau, int low, int high) {
             this.tableau = tableau;
-            this.debut = debut;
-            this.fin = fin;
+            this.low = low;
+            this.high = high;
         }
 
         @Override
-        public void run() {
-            int pivot = partitionner(tableau, debut, fin);
-            if ((fin - debut + 1) <= taille / 100) {
-                trierRapidement(tableau, debut, pivot - 1);
-                trierRapidement(tableau, pivot + 1, fin);
+        protected void compute() {
+            if ((high - low) < threshold) {
+                trierRapidement(tableau, low, high);
             } else {
-                NbTaches++;
-                NbTaches++;
-                Task taskLeft = new Task(tableau, debut, pivot - 1);
-                taskLeft.run();
-                Task taskRight = new Task(tableau, pivot + 1, fin);
-                taskRight.run();
-            }
+                int i = low, j = high;
+                int pivot = tableau[low + (high - low) / 2];
 
+                while (i <= j) {
+                    while (tableau[i] < pivot) {
+                        i++;
+                    }
+
+                    while (tableau[j] > pivot) {
+                        j--;
+                    }
+
+                    if (i <= j) {
+                        swap(tableau, i, j);
+                        i++;
+                        j--;
+                    }
+                }
+
+                if (low < j) {
+                    ForkJoinTask.invokeAll(new PQuicksort(tableau, low, j));
+                }
+
+                if (i < high) {
+                    ForkJoinTask.invokeAll(new PQuicksort(tableau, i, high));
+                }
+            }
         }
     }
+
 }
