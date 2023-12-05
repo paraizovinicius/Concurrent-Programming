@@ -12,8 +12,8 @@ public class PetitDejeuner {
 }    
 
 class Table { // Les trois Hobbits mangent que quand tous les trois ont faim
-  private int nbHobbits;
-  private int nbSentados = 0;
+  final int nbHobbits;
+  private volatile int nbSentados = 0;
 
   public Table(int nbHobbits) {
     this.nbHobbits = nbHobbits;
@@ -22,13 +22,13 @@ class Table { // Les trois Hobbits mangent que quand tous les trois ont faim
   public synchronized void sAsseoir(){
     nbSentados++;
     notifyAll();
-
-    while(nbSentados<nbHobbits){
+    while(nbSentados<nbHobbits && nbSentados!=0){
       try {
       wait();
     } catch (Exception e) {
       e.printStackTrace();
     }
+
     }
   }
 
