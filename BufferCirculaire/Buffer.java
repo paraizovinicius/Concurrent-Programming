@@ -6,6 +6,7 @@ public class Buffer {
     private volatile int disponibles = 0;
     private volatile int prochain = 0;
     private volatile int premier = 0;
+    
     Buffer(int taille){
         this.taille = taille;
         this.buffer = new byte[taille];
@@ -51,8 +52,8 @@ public class Buffer {
             byte donnee =0;
             while (true){
                 donnee = (byte) ThreadLocalRandom.current().nextInt(100);
-                try{ monBuffer.deposer
-            (donnee);} catch(InterruptedException e) {break; }
+                try{ monBuffer.deposer(donnee);
+                } catch(InterruptedException e) {break; }
             }
         }
     }
