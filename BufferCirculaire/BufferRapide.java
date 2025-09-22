@@ -9,10 +9,12 @@ public class BufferRapide {
     private final Object verrouRetrait = new Object();
     int premier = 0;
     int prochain = 0;
+    
     BufferRapide(int taille){
         this.taille = taille;
         this.buffer = new byte[taille];
     }
+
     void deposer(byte b) throws InterruptedException{
         synchronized(verrouDepot){
             while(disponibles.get() == taille) verrouDepot.wait();
@@ -63,11 +65,13 @@ public class BufferRapide {
             byte donnee =0;
             while (true){
                 donnee = (byte) ThreadLocalRandom.current().nextInt(100);
-                try{ monBuffer.deposer
-            (donnee);} catch(InterruptedException e) {break; }
+                try{ 
+                    monBuffer.deposer(donnee);
+                } catch(InterruptedException e) {break; }
             }
         }
     }
+
     static class Consommateur extends Thread{
         BufferRapide monBuffer;
         public Consommateur(BufferRapide buffer){
